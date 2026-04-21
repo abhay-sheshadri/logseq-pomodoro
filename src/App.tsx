@@ -12,6 +12,7 @@ import {
   getTodayTodos,
   markTodoDone,
   markTodoDoing,
+  markTodoOpen,
   addTodoToToday,
   formatTimeOfDay,
   logSessionToDaily,
@@ -30,8 +31,6 @@ const App: React.FC = () => {
   const [completedUuids, setCompletedUuids] = useState<Set<string>>(new Set());
   const [sessionCompleted, setSessionCompleted] = useState<CompletedTodo[]>([]);
   const [progressUuids, setProgressUuids] = useState<Set<string>>(new Set());
-  const [progressNotes, setProgressNotes] = useState<Map<string, string>>(new Map());
-  const [interruptions, setInterruptions] = useState(0);
 
   const [sessions, setSessions] = useState<SessionLog[]>([]);
 
@@ -56,15 +55,11 @@ const App: React.FC = () => {
       if (completedUuids.has(uuid)) continue;
       const todo = todos.find((t) => t.uuid === uuid);
       if (todo) {
-        entries.push({
-          uuid: todo.uuid,
-          content: todo.content,
-          note: progressNotes.get(uuid) ?? "",
-        });
+        entries.push({ uuid: todo.uuid, content: todo.content });
       }
     }
     return entries;
-  }, [progressUuids, completedUuids, todos, progressNotes]);
+  }, [progressUuids, completedUuids, todos]);
 
   const finishWorkSession = useCallback(async () => {
     clearTimer();
@@ -80,7 +75,6 @@ const App: React.FC = () => {
       focus,
       completed: [...sessionCompleted],
       progress: buildProgressEntries(),
-      interruptions,
     };
 
     setSessions((prev) => [...prev, session]);
@@ -88,15 +82,13 @@ const App: React.FC = () => {
 
     setSessionCompleted([]);
     setProgressUuids(new Set());
-    setProgressNotes(new Map());
     setFocus("");
-    setInterruptions(0);
 
     setPhase("break");
     setSecondsLeft(BREAK_DURATION);
     setIsRunning(true);
     sessionStartRef.current = new Date();
-  }, [clearTimer, sessionNumber, focus, sessionCompleted, buildProgressEntries, interruptions]);
+  }, [clearTimer, sessionNumber, focus, sessionCompleted, buildProgressEntries]);
 
   const finishBreak = useCallback(() => {
     clearTimer();
@@ -157,8 +149,6 @@ const App: React.FC = () => {
     setSessionCompleted([]);
     setCompletedUuids(new Set());
     setProgressUuids(new Set());
-    setProgressNotes(new Map());
-    setInterruptions(0);
   };
 
   const handleSkip = () => {
@@ -177,8 +167,6 @@ const App: React.FC = () => {
     setCompletedUuids(new Set());
     setSessionCompleted([]);
     setProgressUuids(new Set());
-    setProgressNotes(new Map());
-    setInterruptions(0);
     setSessions([]);
     sessionStartRef.current = null;
   };
@@ -196,19 +184,28 @@ const App: React.FC = () => {
     setCompletedUuids((prev) => new Set(prev).add(uuid));
   };
 
-  const handleProgressTodo = async (uuid: string) => {
-    if (!progressUuids.has(uuid)) {
+  const handleUncompleteTodo = async (uuid: string) => {
+    await markTodoOpen(uuid);
+    setCompletedUuids((prev) => {
+      const next = new Set(prev);
+      next.delete(uuid);
+      return next;
+    });
+    setSessionCompleted((prev) => prev.filter((t) => t.uuid !== uuid));
+  };
+
+  const handleToggleProgress = async (uuid: string) => {
+    if (progressUuids.has(uuid)) {
+      await markTodoOpen(uuid);
+      setProgressUuids((prev) => {
+        const next = new Set(prev);
+        next.delete(uuid);
+        return next;
+      });
+    } else {
       await markTodoDoing(uuid);
       setProgressUuids((prev) => new Set(prev).add(uuid));
     }
-  };
-
-  const handleSetProgressNote = (uuid: string, note: string) => {
-    setProgressNotes((prev) => {
-      const next = new Map(prev);
-      next.set(uuid, note);
-      return next;
-    });
   };
 
   const handleAddTodo = async (content: string) => {
@@ -282,14 +279,11 @@ const App: React.FC = () => {
                 todos={todos}
                 completedUuids={completedUuids}
                 progressUuids={progressUuids}
-                progressNotes={progressNotes}
-                interruptions={interruptions}
                 onSetFocus={setFocus}
                 onCompleteTodo={handleCompleteTodo}
-                onProgressTodo={handleProgressTodo}
-                onSetProgressNote={handleSetProgressNote}
+                onUncompleteTodo={handleUncompleteTodo}
+                onToggleProgress={handleToggleProgress}
                 onAddTodo={handleAddTodo}
-                onInterrupt={() => setInterruptions((n) => n + 1)}
               />
             </div>
           )}

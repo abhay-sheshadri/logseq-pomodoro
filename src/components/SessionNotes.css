@@ -79,7 +79,7 @@
 .todo-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   padding: 8px 8px;
   width: 100%;
 }
@@ -89,13 +89,26 @@
   opacity: 0.4;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  border-radius: 8px;
+  transition: opacity 0.15s ease;
+}
+
+.todo-row.done:hover {
+  opacity: 0.6;
 }
 
 .todo-row.done .todo-text {
   text-decoration: line-through;
 }
 
+/* Checkbox */
 .todo-checkbox-btn {
   background: none;
   border: none;
@@ -137,71 +150,63 @@
   transform: rotate(45deg);
 }
 
+/* Doing button */
+.todo-doing-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.todo-row-wrapper:hover .todo-doing-btn,
+.todo-doing-btn.active {
+  opacity: 1;
+}
+
+.todo-doing-icon {
+  width: 18px;
+  height: 18px;
+  border: 1.5px dashed var(--ls-border-color, #ccc);
+  border-radius: 5px;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.todo-doing-btn:hover .todo-doing-icon {
+  border-color: #ffb74d;
+}
+
+.todo-doing-icon.active {
+  border-style: solid;
+  border-color: #ffb74d;
+  background: rgba(255, 183, 77, 0.15);
+}
+
+.todo-doing-icon::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 3px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid var(--ls-secondary-text-color, #bbb);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+.todo-doing-btn:hover .todo-doing-icon::after,
+.todo-doing-icon.active::after {
+  border-left-color: #ffb74d;
+}
+
 .todo-text {
   flex: 1;
   font-size: 13px;
   color: var(--ls-primary-text-color, #333);
-  line-height: 1.4;
-}
-
-.todo-progress-btn {
-  background: none;
-  border: none;
-  padding: 4px;
-  cursor: pointer;
-  color: var(--ls-secondary-text-color, #ccc);
-  border-radius: 4px;
-  opacity: 0;
-  transition: all 0.15s ease;
-  flex-shrink: 0;
-  display: flex;
-}
-
-.todo-row-wrapper:hover .todo-progress-btn {
-  opacity: 1;
-}
-
-.todo-progress-btn.active {
-  opacity: 1;
-  color: #ffb74d;
-}
-
-.todo-progress-btn:hover {
-  color: #ffb74d;
-  background: rgba(255, 183, 77, 0.1);
-}
-
-/* Progress note */
-.progress-note-row {
-  padding: 0 8px 8px 36px;
-}
-
-.progress-note-input {
-  width: 100%;
-  padding: 6px 10px;
-  border: 1px solid rgba(255, 183, 77, 0.3);
-  border-radius: 6px;
-  font-size: 12px;
-  background: rgba(255, 183, 77, 0.05);
-  color: var(--ls-primary-text-color, #333);
-  outline: none;
-  font-family: inherit;
-  transition: border-color 0.15s ease;
-}
-
-.progress-note-input:focus {
-  border-color: #ffb74d;
-}
-
-.progress-note-input::placeholder {
-  color: var(--ls-secondary-text-color, #bbb);
-}
-
-.progress-note-preview {
-  padding: 0 8px 8px 36px;
-  font-size: 12px;
-  color: var(--ls-secondary-text-color, #999);
-  cursor: pointer;
   line-height: 1.4;
 }
 
@@ -261,34 +266,4 @@
 .todo-add-btn:disabled {
   opacity: 0.25;
   cursor: not-allowed;
-}
-
-/* Interruptions */
-.interrupt-section {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.interrupt-btn {
-  padding: 6px 12px;
-  border: 1px dashed var(--ls-border-color, #ddd);
-  border-radius: 8px;
-  font-size: 12px;
-  cursor: pointer;
-  background: none;
-  color: var(--ls-secondary-text-color, #aaa);
-  transition: all 0.15s ease;
-  font-family: inherit;
-}
-
-.interrupt-btn:hover {
-  border-color: #e06c60;
-  color: #e06c60;
-}
-
-.interrupt-count {
-  font-size: 12px;
-  color: #e06c60;
-  font-weight: 600;
 }

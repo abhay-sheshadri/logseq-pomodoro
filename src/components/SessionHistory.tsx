@@ -67,11 +67,6 @@ const SessionHistory: React.FC<SessionHistoryProps> = ({
                 {s.progress.map((entry, j) => (
                   <span key={j} className="history-entry progress">
                     {entry.content}
-                    {entry.note && (
-                      <span className="history-entry-note">
-                        {" "}&mdash; {entry.note}
-                      </span>
-                    )}
                   </span>
                 ))}
               </div>

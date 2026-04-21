@@ -115,8 +115,3 @@
   color: #ffb74d;
   font-size: 9px;
 }
-
-.history-entry-note {
-  color: var(--ls-secondary-text-color, #aaa);
-  font-style: italic;
-}

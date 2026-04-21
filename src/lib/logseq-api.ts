@@ -12,7 +12,6 @@ export interface CompletedTodo {
 export interface ProgressEntry {
   uuid: string;
   content: string;
-  note: string;
 }
 
 export interface SessionLog {
@@ -22,7 +21,6 @@ export interface SessionLog {
   focus: string;
   completed: CompletedTodo[];
   progress: ProgressEntry[];
-  interruptions: number;
 }
 
 function todayJournalName(): string {
@@ -104,6 +102,16 @@ export async function markTodoDoing(blockUuid: string): Promise<void> {
   await logseq.Editor.updateBlock(blockUuid, newContent);
 }
 
+export async function markTodoOpen(blockUuid: string): Promise<void> {
+  const block = await logseq.Editor.getBlock(blockUuid);
+  if (!block) return;
+  const newContent = block.content.replace(
+    /^(DONE|DOING)\s/,
+    "TODO "
+  );
+  await logseq.Editor.updateBlock(blockUuid, newContent);
+}
+
 export async function addTodoToToday(content: string): Promise<TodoBlock | null> {
   const pageName = todayJournalName();
   let page = await logseq.Editor.getPage(pageName);
@@ -171,23 +179,13 @@ export async function logSessionToDaily(session: SessionLog): Promise<void> {
     );
     if (block) {
       for (const entry of session.progress) {
-        const text = entry.note
-          ? `${entry.content} — ${entry.note}`
-          : entry.content;
-        await logseq.Editor.insertBlock(block.uuid, text, {
+        await logseq.Editor.insertBlock(block.uuid, entry.content, {
           sibling: false,
         });
       }
     }
   }
 
-  if (session.interruptions > 0) {
-    await logseq.Editor.insertBlock(
-      parentBlock.uuid,
-      `Interruptions: ${session.interruptions}`,
-      { sibling: false }
-    );
-  }
 }
 
 export async function logDailySummary(
