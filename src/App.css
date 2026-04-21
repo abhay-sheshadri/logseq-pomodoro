@@ -1,0 +1,102 @@
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.pomodoro-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  backdrop-filter: blur(4px);
+}
+
+.pomodoro-dashboard {
+  background: var(--ls-primary-background-color, #fff);
+  border-radius: 14px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  width: 90vw;
+  max-width: 760px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pomodoro-title-bar {
+  display: flex;
+  align-items: center;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--ls-border-color, #eee);
+  gap: 12px;
+}
+
+.pomodoro-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ls-primary-text-color, #333);
+  letter-spacing: -0.2px;
+}
+
+.pomodoro-split-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ls-secondary-text-color, #aaa);
+  background: var(--ls-secondary-background-color, #f5f5f5);
+  padding: 3px 10px;
+  border-radius: 10px;
+  letter-spacing: 0.3px;
+}
+
+.pomodoro-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--ls-secondary-text-color, #999);
+  padding: 2px 6px;
+  line-height: 1;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  margin-left: auto;
+}
+
+.pomodoro-close:hover {
+  background: var(--ls-secondary-background-color, #f0f0f0);
+  color: var(--ls-primary-text-color, #333);
+}
+
+.pomodoro-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.pomodoro-timer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 32px;
+  flex-shrink: 0;
+}
+
+.pomodoro-notes-section {
+  flex: 1;
+  border-left: 1px solid var(--ls-border-color, #eee);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}

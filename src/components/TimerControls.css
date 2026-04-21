@@ -1,0 +1,50 @@
+.timer-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px 0 20px;
+}
+
+.ctrl-btn {
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+  letter-spacing: -0.1px;
+}
+
+.ctrl-btn.primary {
+  background: var(--ls-primary-text-color, #333);
+  color: var(--ls-primary-background-color, #fff);
+  border: none;
+}
+
+.ctrl-btn.primary:hover {
+  opacity: 0.85;
+}
+
+.ctrl-btn.secondary {
+  background: var(--ls-secondary-background-color, #f5f5f5);
+  color: var(--ls-primary-text-color, #333);
+  border: 1px solid var(--ls-border-color, #e0e0e0);
+}
+
+.ctrl-btn.secondary:hover {
+  background: var(--ls-tertiary-background-color, #eee);
+}
+
+.ctrl-btn.ghost {
+  background: none;
+  color: var(--ls-secondary-text-color, #999);
+  border: none;
+  padding: 10px 14px;
+}
+
+.ctrl-btn.ghost:hover {
+  color: var(--ls-primary-text-color, #333);
+  background: var(--ls-secondary-background-color, #f5f5f5);
+}
