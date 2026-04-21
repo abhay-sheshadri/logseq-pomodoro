@@ -18,7 +18,11 @@ import {
   logSessionToDaily,
   logDailySummary,
 } from "./lib/logseq-api";
-import { playWorkComplete, playBreakComplete } from "./lib/sounds";
+import {
+  playWorkComplete,
+  playBreakComplete,
+  requestNotificationPermission,
+} from "./lib/sounds";
 
 const App: React.FC = () => {
   const [phase, setPhase] = useState<TimerPhase>("idle");
@@ -36,6 +40,8 @@ const App: React.FC = () => {
 
   const sessionStartRef = useRef<Date | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const endTimeRef = useRef<number | null>(null);
+  const pausedRemainingRef = useRef<number | null>(null);
 
   const fetchTodos = useCallback(async () => {
     const items = await getTodayTodos();
@@ -86,6 +92,8 @@ const App: React.FC = () => {
 
     setPhase("break");
     setSecondsLeft(BREAK_DURATION);
+    endTimeRef.current = Date.now() + BREAK_DURATION * 1000;
+    pausedRemainingRef.current = null;
     setIsRunning(true);
     sessionStartRef.current = new Date();
   }, [clearTimer, sessionNumber, focus, sessionCompleted, buildProgressEntries]);
@@ -96,6 +104,8 @@ const App: React.FC = () => {
     setPhase("idle");
     setSecondsLeft(WORK_DURATION);
     setIsRunning(false);
+    endTimeRef.current = null;
+    pausedRemainingRef.current = null;
     sessionStartRef.current = null;
   }, [clearTimer]);
 
@@ -104,16 +114,23 @@ const App: React.FC = () => {
       clearTimer();
       return;
     }
+
+    if (endTimeRef.current === null) {
+      const remaining = pausedRemainingRef.current ?? secondsLeft;
+      endTimeRef.current = Date.now() + remaining * 1000;
+      pausedRemainingRef.current = null;
+    }
+
     intervalRef.current = setInterval(() => {
-      setSecondsLeft((prev) => {
-        if (prev <= 1) {
-          if (phase === "work") finishWorkSession();
-          else if (phase === "break") finishBreak();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+      const remaining = Math.round(
+        Math.max(0, (endTimeRef.current! - Date.now()) / 1000)
+      );
+      setSecondsLeft(remaining);
+      if (remaining <= 0) {
+        if (phase === "work") finishWorkSession();
+        else if (phase === "break") finishBreak();
+      }
+    }, 500);
     return clearTimer;
   }, [isRunning, phase, clearTimer, finishWorkSession, finishBreak]);
 
@@ -129,8 +146,8 @@ const App: React.FC = () => {
       ) {
         e.preventDefault();
         if (phase === "idle") handleStart();
-        else if (isRunning) setIsRunning(false);
-        else setIsRunning(true);
+        else if (isRunning) handlePause();
+        else handleResume();
       }
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -138,11 +155,14 @@ const App: React.FC = () => {
   }, [phase, isRunning]);
 
   const handleStart = async () => {
+    requestNotificationPermission();
     await fetchTodos();
     const next = sessionNumber + 1;
     setSessionNumber(next);
     setPhase("work");
     setSecondsLeft(WORK_DURATION);
+    endTimeRef.current = Date.now() + WORK_DURATION * 1000;
+    pausedRemainingRef.current = null;
     setIsRunning(true);
     sessionStartRef.current = new Date();
     setFocus("");
@@ -154,6 +174,21 @@ const App: React.FC = () => {
   const handleSkip = () => {
     if (phase === "work") finishWorkSession();
     else if (phase === "break") finishBreak();
+  };
+
+  const handlePause = () => {
+    if (endTimeRef.current !== null) {
+      pausedRemainingRef.current = Math.max(
+        0,
+        Math.round((endTimeRef.current - Date.now()) / 1000)
+      );
+    }
+    endTimeRef.current = null;
+    setIsRunning(false);
+  };
+
+  const handleResume = () => {
+    setIsRunning(true);
   };
 
   const handleReset = () => {
@@ -168,6 +203,8 @@ const App: React.FC = () => {
     setSessionCompleted([]);
     setProgressUuids(new Set());
     setSessions([]);
+    endTimeRef.current = null;
+    pausedRemainingRef.current = null;
     sessionStartRef.current = null;
   };
 
@@ -265,8 +302,8 @@ const App: React.FC = () => {
               phase={phase}
               isRunning={isRunning}
               onStart={handleStart}
-              onPause={() => setIsRunning(false)}
-              onResume={() => setIsRunning(true)}
+              onPause={handlePause}
+              onResume={handleResume}
               onSkip={handleSkip}
               onReset={handleReset}
             />

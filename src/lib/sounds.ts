@@ -1,6 +1,3 @@
-// Generate simple beep tones using the Web Audio API.
-// No external audio files needed.
-
 let audioCtx: AudioContext | null = null;
 
 function getAudioContext(): AudioContext {
@@ -20,7 +17,6 @@ function playTone(frequency: number, duration: number, volume = 0.3) {
     osc.frequency.value = frequency;
     gain.gain.value = volume;
 
-    // Fade out to avoid clicks
     gain.gain.setValueAtTime(volume, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
 
@@ -30,7 +26,27 @@ function playTone(frequency: number, duration: number, volume = 0.3) {
     osc.start(ctx.currentTime);
     osc.stop(ctx.currentTime + duration);
   } catch {
-    // Audio not available — fail silently
+    // Audio not available
+  }
+}
+
+function notify(title: string, body: string) {
+  try {
+    if (Notification.permission === "granted") {
+      new Notification(title, { body, silent: true });
+    }
+  } catch {
+    // Notifications not available
+  }
+}
+
+export function requestNotificationPermission() {
+  try {
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  } catch {
+    // Notifications not available
   }
 }
 
@@ -38,9 +54,11 @@ export function playWorkComplete() {
   playTone(880, 0.15);
   setTimeout(() => playTone(1100, 0.15), 180);
   setTimeout(() => playTone(1320, 0.25), 360);
+  notify("Focus session complete", "Time for a 10 minute break.");
 }
 
 export function playBreakComplete() {
   playTone(660, 0.2);
   setTimeout(() => playTone(880, 0.3), 250);
+  notify("Break over", "Ready for another session?");
 }
